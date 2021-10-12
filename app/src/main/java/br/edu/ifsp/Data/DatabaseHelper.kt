@@ -6,18 +6,18 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import br.edu.ifsp.Model.Contato
 
-class DatabaseHelper(context: Context):
-    SQLiteOpenHelper(context,DATABASE_NAME,null,DATABASE_VERSION) {
+class DatabaseHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-        companion object{
-            private val DATABASE_NAME="agenda.db"
-            private val DATABASE_VERSION=1
-            private  val TABLE_NAME = "contatos"
-            private val ID = "id"
-            private val NOME = "nome"
-            private val FONE = "fone"
-            private val EMAIL ="email"
-        }
+    companion object {
+        private val DATABASE_NAME = "agenda.db"
+        private val DATABASE_VERSION = 1
+        private val TABLE_NAME = "contatos"
+        private val ID = "id"
+        private val NOME = "nome"
+        private val FONE = "fone"
+        private val EMAIL = "email"
+    }
 
     override fun onCreate(p0: SQLiteDatabase?) {
         val CREATE_TABLE = "CREATE TABLE $TABLE_NAME ($ID INTEGER PRIMARY KEY AUTOINCREMENT, $NOME TEXT, $FONE TEXT, $EMAIL TEXT)"
@@ -37,50 +37,49 @@ class DatabaseHelper(context: Context):
         }*/
     }
 
-    fun inserirContato(contato: Contato): Long
-    {
+    fun inserirContato(contato: Contato): Long {
         val db = this.writableDatabase
         val values = ContentValues()
-        values.put(ID,contato.id)
+        values.put(ID, contato.id)
         values.put(NOME, contato.nome)
         values.put(FONE, contato.fone)
         values.put(EMAIL, contato.email)
-        val result = db.insert(TABLE_NAME,null,values)
+        val result = db.insert(TABLE_NAME, null, values)
         db.close()
         return result
     }
 
-    fun atualizarContato (contato: Contato): Int{
+    fun atualizarContato(contato: Contato): Int {
         val db = this.writableDatabase
         val values = ContentValues()
-        values.put(ID,contato.id)
+        values.put(ID, contato.id)
         values.put(NOME, contato.nome)
         values.put(FONE, contato.fone)
         values.put(EMAIL, contato.email)
-        val result = db.update(TABLE_NAME,values,"$ID=?", arrayOf(contato.id.toString()))
+        val result = db.update(TABLE_NAME, values, "$ID=?", arrayOf(contato.id.toString()))
         db.close()
         return result
     }
 
-    fun apagarContato(contato: Contato):Int{
+    fun apagarContato(contato: Contato): Int {
         val db = this.writableDatabase
-        val result =db.delete(TABLE_NAME,"$ID=?", arrayOf(contato.id.toString()))
+        val result = db.delete(TABLE_NAME, "$ID=?", arrayOf(contato.id.toString()))
         db.close()
         return result
     }
 
-    fun listarContatos():ArrayList<Contato>
-    {
+    fun listarContatos(): ArrayList<Contato> {
         val listaContatos = ArrayList<Contato>()
         val query = "SELECT * FROM $TABLE_NAME ORDER BY $NOME"
         val db = this.readableDatabase
-        val cursor = db.rawQuery(query,null)
-        while (cursor.moveToNext())
-        {
-            val c = Contato (cursor.getInt(0),
-                             cursor.getString(1),
-                             cursor.getString(2),
-                             cursor.getString(3))
+        val cursor = db.rawQuery(query, null)
+        while (cursor.moveToNext()) {
+            val c = Contato(
+                cursor.getInt(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                cursor.getString(3)
+            )
             listaContatos.add(c)
         }
         cursor.close()

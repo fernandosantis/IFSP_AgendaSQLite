@@ -10,7 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AgendaSQLite">
         <activity
-            android:name=".MainActivity"
+            android:name=".Activity.DetalheActivity"
+            android:exported="true" />
+        <activity
+            android:name=".Activity.CadastroActivity"
+            android:exported="true" />
+        <activity
+            android:name=".Activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

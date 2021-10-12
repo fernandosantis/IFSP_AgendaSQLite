@@ -8,7 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import br.edu.ifsp.Model.Contato
 import br.edu.ifsp.R
 
-class ContatoAdapter(val listaContatos:ArrayList<Contato>):RecyclerView.Adapter<ContatoAdapter.ContatoViewHolder> () {
+class ContatoAdapter(val listaContatos: ArrayList<Contato>) : RecyclerView.Adapter<ContatoAdapter.ContatoViewHolder> () {
+
+    var listener: ContatoListener? = null
+
+    fun setClickListener(listener: ContatoListener) {
+        this.listener = listener
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -27,10 +34,19 @@ class ContatoAdapter(val listaContatos:ArrayList<Contato>):RecyclerView.Adapter<
     }
 
     // Suporte (Holder) para manter a referencia da View, no caso Item_Contato
-    inner class ContatoViewHolder(view: View):RecyclerView.ViewHolder(view)
-    {
+    inner class ContatoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val vhNome = view.findViewById<TextView>(R.id.tv_Nome)
         val vhFone = view.findViewById<TextView>(R.id.tv_Fone)
+
+        init {
+            view.setOnClickListener {
+                listener?.onItemClick(adapterPosition)
+            }
+        }
     }
 
+    // Interface
+    interface ContatoListener {
+        fun onItemClick(pos: Int)
+    }
 }
