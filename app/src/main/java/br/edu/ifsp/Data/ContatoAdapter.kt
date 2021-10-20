@@ -3,14 +3,24 @@ package br.edu.ifsp.Data
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.ifsp.Model.Contato
 import br.edu.ifsp.R
 
-class ContatoAdapter(val listaContatos: ArrayList<Contato>) : RecyclerView.Adapter<ContatoAdapter.ContatoViewHolder> () {
+class ContatoAdapter(val listaContatos: ArrayList<Contato>) : RecyclerView.Adapter<ContatoAdapter.ContatoViewHolder> (),
+    Filterable {
 
     var listener: ContatoListener? = null
+
+    var listaContatosFilterable = ArrayList<Contato>()
+
+    init {
+        this.listaContatosFilterable = listaContatos
+    }
+
 
     fun setClickListener(listener: ContatoListener) {
         this.listener = listener
@@ -25,12 +35,12 @@ class ContatoAdapter(val listaContatos: ArrayList<Contato>) : RecyclerView.Adapt
     }
 
     override fun onBindViewHolder(holder: ContatoAdapter.ContatoViewHolder, position: Int) {
-        holder.vhNome.text = listaContatos[position].nome
-        holder.vhFone.text = listaContatos[position].fone
+        holder.vhNome.text = listaContatosFilterable[position].nome
+        holder.vhFone.text = listaContatosFilterable[position].fone
     }
 
     override fun getItemCount(): Int {
-        return listaContatos.size
+        return listaContatosFilterable.size
     }
 
     // Suporte (Holder) para manter a referencia da View, no caso Item_Contato
@@ -48,5 +58,32 @@ class ContatoAdapter(val listaContatos: ArrayList<Contato>) : RecyclerView.Adapt
     // Interface
     interface ContatoListener {
         fun onItemClick(pos: Int)
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val charSearch = constraint.toString()
+                if (charSearch.isEmpty())
+                    listaContatosFilterable = listaContatos
+                else
+                {
+                    val resultList = ArrayList<Contato>()
+                    for (contato in listaContatos)
+                        if (contato.nome.lowercase().contains(constraint.toString().lowercase()))
+                            resultList.add(contato)
+                    listaContatosFilterable = resultList
+                }
+                val filterResults = FilterResults()
+                filterResults.values = listaContatosFilterable
+                return filterResults
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                listaContatosFilterable = results?.values as ArrayList<Contato>
+                notifyDataSetChanged()
+            }
+
+        }
     }
 }
