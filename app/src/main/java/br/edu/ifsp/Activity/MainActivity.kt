@@ -1,23 +1,33 @@
 package br.edu.ifsp.Activity
 
+import android.Manifest.permission.READ_CONTACTS
+import android.Manifest.permission.WRITE_CONTACTS
 import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.view.Menu
 import android.widget.SearchView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.edu.ifsp.Data.ContatoAdapter
-import br.edu.ifsp.Data.DatabaseHelper
+import br.edu.ifsp.Data.ContentProviderHelper
 import br.edu.ifsp.Model.Contato
 import br.edu.ifsp.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
-    val db = DatabaseHelper(this)
+    // val db = DatabaseHelper(this)
+    val db: ContentProviderHelper by lazy {
+        ContentProviderHelper(this)
+    }
     var listaContatos = ArrayList<Contato>()
     lateinit var adapterContato: ContatoAdapter
+
+    private lateinit var permissaoContatosARL: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +39,17 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        updateUI()
+        permissaoContatosARL = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissoes ->
+            if (permissoes.containsValue(false)) {
+                // Solicitar Permissões Novamente
+                requisitarPermissaoContatos()
+            } else {
+                updateUI()
+            }
+        }
     }
+
+    private fun requisitarPermissaoContatos() = permissaoContatosARL.launch(arrayOf(READ_CONTACTS, WRITE_CONTACTS))
 
     override fun onResume() {
         super.onResume()
@@ -42,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         val item = menu?.findItem(R.id.action_buscar)
         val searchView = item?.actionView as SearchView
 
-        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 TODO("Not yet implemented")
             }
@@ -51,14 +70,19 @@ class MainActivity : AppCompatActivity() {
                 adapterContato?.filter?.filter(newText)
                 return true
             }
-
         })
 
         return super.onCreateOptionsMenu(menu)
     }
 
     fun updateUI() {
-        listaContatos = db.listarContatos()
+
+        if (checkSelfPermission(READ_CONTACTS) != PERMISSION_GRANTED || checkSelfPermission(WRITE_CONTACTS) != PERMISSION_GRANTED) {
+            requisitarPermissaoContatos()
+        } else {
+            listaContatos = db.listarContatos()
+        }
+
         adapterContato = ContatoAdapter(listaContatos)
 
         val recyclerview = findViewById<RecyclerView>(R.id.rv_Contatos)
